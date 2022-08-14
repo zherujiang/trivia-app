@@ -35,8 +35,19 @@ def create_app(test_config=None):
     @TODO:
     Create an endpoint to handle GET requests
     for all available categories.
+    this would respond to the GET request from QuizView.js, expecting a dictionary object
     """
-
+    @app.route('/categories')
+    def get_categories():
+        categories = Category.query.order_by(Category.id).all()
+        result = {}
+        for category in categories:
+            result[category.id] = category.type
+        print('all categories:', result)
+        return jsonify({
+            'categories': result
+        })
+        
     """
     @TODO:
     Create an endpoint to handle GET requests for questions,
