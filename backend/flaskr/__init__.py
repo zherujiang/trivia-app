@@ -53,6 +53,7 @@ def create_app(test_config=None):
             categories[category.id] = category.type
         print('all categories:', categories)
         return jsonify({
+            'success': True,
             'categories': categories
         })
         
@@ -70,14 +71,27 @@ def create_app(test_config=None):
     """
     @app.route('/questions')
     def get_questions():
-        current_page = request.args.get('page')
-        all_questions = Question.query.order_by(Question.id).all()
-        question_num = len(all_questions)
-
-        if question_num == 0:
-            abort(404)
+        print(request)
+        current_category = request.args.get('category', None)
+        current_page = request.args.get('page', 1)
+        print('category', current_category)
+        # print('page', current_page)
         try:
-            current_questions = paginate_questions(all_questions, current_page)
+            print('test')
+            if current_category is not None and current_category != 'null':
+                # get questions by category
+                questions_query = Question.query.filter(Question.category==current_category).order_by(Question.id).all()
+                current_questions = paginate_questions(questions_query, 1)
+            else:
+                # get all questions
+                print('get all questions')
+                questions_query = Question.query.order_by(Question.id).all()
+                current_questions = paginate_questions(questions_query, current_page)
+            
+            question_num = len(questions_query)
+
+            if question_num == 0:
+                abort(404)
             
             categories_query = Category.query.order_by(Category.id).all()
             categories = {}
@@ -85,10 +99,11 @@ def create_app(test_config=None):
                 categories[category.id] = category.type
             
             return jsonify({
+                'success': True,
                 'questions': current_questions,
                 'total_questions': question_num,
                 'categories': categories,
-                'current_category': None,
+                'current_category': current_category,
             })
         except:
             abort(400)
@@ -131,6 +146,20 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     """
+    # @app.route('/categories/<int:category_id>/questions')
+    # def get_questions_by_category(category_id):
+    #     try:
+    #         category = Category.query.filter(Category.id==category_id).one_or_none()
+    #         print('getting category:', category, category.type)
+    #         questions_query = Question.query.filter(Question.category==category_id).order_by(Question.id).all()
+    #         current_questions = paginate_questions(questions_query, 1)
+    #         return jsonify({
+    #             'questions': current_questions,
+    #             'total_questions': len(questions_query),
+    #             'current_category': category.type
+    #         })
+    #     except:
+    #         abort(404)
 
     """
     @TODO:

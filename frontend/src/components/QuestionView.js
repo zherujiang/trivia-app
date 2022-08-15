@@ -22,7 +22,7 @@ class QuestionView extends Component {
 
   getQuestions = () => {
     $.ajax({
-      url: `/questions?page=${this.state.page}`, //TODO: update request URL
+      url: `/questions?category=${this.state.currentCategory}&page=${this.state.page}`, //TODO: update request URL
       type: 'GET',
       success: (result) => {
         this.setState({
@@ -65,24 +65,27 @@ class QuestionView extends Component {
     return pageNumbers;
   }
 
-  getByCategory = (id) => {
-    $.ajax({
-      url: `/categories/${id}/questions`, //TODO: update request URL
-      type: 'GET',
-      success: (result) => {
-        this.setState({
-          questions: result.questions,
-          totalQuestions: result.total_questions,
-          currentCategory: result.current_category,
-        });
-        return;
-      },
-      error: (error) => {
-        alert('Unable to load questions. Please try your request again');
-        return;
-      },
-    });
-  };
+  getByCategory(id) {
+    this.setState({ currentCategory: id }, () => this.getQuestions());
+  }
+  // getByCategory = (id) => {
+  //   $.ajax({
+  //     url: `/categories/${id}/questions`, //TODO: update request URL
+  //     type: 'GET',
+  //     success: (result) => {
+  //       this.setState({
+  //         questions: result.questions,
+  //         totalQuestions: result.total_questions,
+  //         currentCategory: result.current_category,
+  //       });
+  //       return;
+  //     },
+  //     error: (error) => {
+  //       alert('Unable to load questions. Please try your request again');
+  //       return;
+  //     },
+  //   });
+  // };
 
   submitSearch = (searchTerm) => {
     $.ajax({
