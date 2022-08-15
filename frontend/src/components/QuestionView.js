@@ -137,7 +137,8 @@ class QuestionView extends Component {
         <div className='categories-list'>
           <h2
             onClick={() => {
-              this.getQuestions();
+              //this.getQuestions();
+              this.setState({ currentCategory: null }, () => this.getQuestions())
             }}
           >
             Categories

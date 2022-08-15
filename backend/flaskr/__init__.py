@@ -146,6 +146,7 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     """
+    # combined get_question_by_category with get_questions
     # @app.route('/categories/<int:category_id>/questions')
     # def get_questions_by_category(category_id):
     #     try:
