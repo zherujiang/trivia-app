@@ -8,6 +8,14 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+def paginate_questions(selection, page):
+    questions = [question.format() for question in selection]
+    start = (int(page) - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+    current_questions = questions[start:end]
+    return current_questions
+    
+    
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
@@ -39,13 +47,13 @@ def create_app(test_config=None):
     """
     @app.route('/categories')
     def get_categories():
-        categories = Category.query.order_by(Category.id).all()
-        result = {}
-        for category in categories:
-            result[category.id] = category.type
-        print('all categories:', result)
+        categories_query = Category.query.order_by(Category.id).all()
+        categories = {}
+        for category in categories_query:
+            categories[category.id] = category.type
+        print('all categories:', categories)
         return jsonify({
-            'categories': result
+            'categories': categories
         })
         
     """
@@ -60,6 +68,32 @@ def create_app(test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
+    @app.route('/questions')
+    def get_questions():
+        current_page = request.args.get('page')
+        all_questions = Question.query.order_by(Question.id).all()
+        question_num = len(all_questions)
+
+        if question_num == 0:
+            abort(404)
+        try:
+            current_questions = paginate_questions(all_questions, current_page)
+            
+            categories_query = Category.query.order_by(Category.id).all()
+            categories = {}
+            for category in categories_query:
+                categories[category.id] = category.type
+            print('categories', categories)
+            print(current_questions)
+            
+            return jsonify({
+                'questions': current_questions,
+                'totalQuestions': question_num,
+                'categories': categories,
+                'currentCategory': None,
+            })
+        except:
+            abort(400)
 
     """
     @TODO:
