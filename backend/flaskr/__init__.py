@@ -83,14 +83,12 @@ def create_app(test_config=None):
             categories = {}
             for category in categories_query:
                 categories[category.id] = category.type
-            print('categories', categories)
-            print(current_questions)
             
             return jsonify({
                 'questions': current_questions,
-                'totalQuestions': question_num,
+                'total_questions': question_num,
                 'categories': categories,
-                'currentCategory': None,
+                'current_category': None,
             })
         except:
             abort(400)
