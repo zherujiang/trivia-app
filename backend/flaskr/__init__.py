@@ -71,13 +71,11 @@ def create_app(test_config=None):
     """
     @app.route('/questions')
     def get_questions():
-        print(request)
         current_category = request.args.get('category', None)
         current_page = request.args.get('page', 1)
         print('category', current_category)
         # print('page', current_page)
         try:
-            print('test')
             if current_category is not None and current_category != 'null':
                 # get questions by category
                 questions_query = Question.query.filter(Question.category==current_category).order_by(Question.id).all()
@@ -137,6 +135,22 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     """
+    @app.route('/questions', methods=['POST'])
+    def search_question():
+        body = request.get_json()
+        search_term = body.get('searchTerm')      
+        try:
+            questions_query = Question.query.filter(Question.question.ilike('%'+search_term+'%')).all()
+            questions = paginate_questions(questions_query, 1)
+            print(questions)
+            return jsonify({
+                'success': True,
+                'questions': questions,
+                'totalQuestions': len(questions),
+                'currentCategory': None
+            })
+        except:
+            abort(400)
 
     """
     @TODO:
