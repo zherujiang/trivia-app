@@ -124,6 +124,33 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
+    @app.route('/questions', methods=['POST'])
+    def add_question():
+        body = request.get_json()
+        if 'searchTerm' in body.keys():
+            return search_question()
+        else:
+            # process this request as a create question
+            try:
+                question = body.get('question')
+                answer = body.get('answer')
+                difficulty = body.get('difficulty')
+                category = body.get('category')
+                new_question = Question(
+                    question = question,
+                    answer = answer,
+                    difficulty = difficulty,
+                    category = category
+                )
+                # print(new_question.question)
+                new_question.insert()
+                
+                return jsonify({
+                    'success': True,
+                    'inserted': new_question.id
+                })
+            except:
+                abort(400)
 
     """
     @TODO:
@@ -135,9 +162,10 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     """
-    @app.route('/questions', methods=['POST'])
+    # @app.route('/questions', methods=['POST'])
     def search_question():
         body = request.get_json()
+        print(body)
         search_term = body.get('searchTerm')      
         try:
             questions_query = Question.query.filter(Question.question.ilike('%'+search_term+'%')).all()
