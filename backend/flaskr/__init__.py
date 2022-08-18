@@ -113,7 +113,19 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     """
-
+    @app.route('/questions/<int:question_id>', methods=['DELETE'])
+    def delete_question(question_id):
+        try:
+            question = Question.query.filter(Question.id==question_id).one_or_none()
+            print('deleting this:', question)
+            question.delete()
+            return jsonify({
+                'success': True,
+                'deleted': question_id
+                })
+        except:
+            abort(400)
+        
     """
     @TODO:
     Create an endpoint to POST a new question,
@@ -215,6 +227,38 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     """
+    @app.route('/quizzes', methods=['POST'])
+    def get_quiz_question():
+        body = request.get_json()
+        
+        try:
+            previous_questions = body.get('previous_questions')
+            category = body.get('quiz_category')['id']
+            print('previous questions:', previous_questions)
+            print('category', category)
+            
+            if category == 0:
+                questions_query = Question.query.filter(Question.id.notin_(previous_questions)).all()
+            else:
+                questions_query = Question.query.filter(Question.category==category,\
+                    Question.id.notin_(previous_questions)).all()
+
+            questions = [question.format() for question in questions_query]
+            #print('available questions:', questions)
+            
+            if questions:
+                selected_question = random.sample(questions, 1)[0]
+                return jsonify({
+                    'success': True,
+                    'question': selected_question
+                })
+            else:
+                return jsonify({
+                    'success': True,
+                    'question': None
+                })
+        except:
+            abort(422)
 
     """
     @TODO:
