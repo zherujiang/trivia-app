@@ -66,7 +66,7 @@ class QuestionView extends Component {
   }
 
   getByCategory(id) {
-    this.setState({ currentCategory: id }, () => this.getQuestions());
+    this.setState({ currentCategory: id, page: 1 }, () => this.getQuestions());
   }
   // getByCategory = (id) => {
   //   $.ajax({
@@ -138,7 +138,7 @@ class QuestionView extends Component {
           <h2
             onClick={() => {
               //this.getQuestions();
-              this.setState({ currentCategory: null }, () => this.getQuestions())
+              this.setState({ currentCategory: null, page: 1 }, () => this.getQuestions())
             }}
           >
             Categories

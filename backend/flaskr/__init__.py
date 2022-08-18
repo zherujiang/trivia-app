@@ -10,10 +10,14 @@ QUESTIONS_PER_PAGE = 10
 
 def paginate_questions(selection, page):
     questions = [question.format() for question in selection]
-    start = (int(page) - 1) * QUESTIONS_PER_PAGE
+    start = (page - 1) * QUESTIONS_PER_PAGE
     end = start + QUESTIONS_PER_PAGE
-    current_questions = questions[start:end]
-    return current_questions
+    if start <= len(selection):
+        current_questions = questions[start:end]
+        return current_questions
+    else:
+        print('page length exceeds maximum')
+        return []
     
     
 def create_app(test_config=None):
@@ -72,22 +76,32 @@ def create_app(test_config=None):
     @app.route('/questions')
     def get_questions():
         current_category = request.args.get('category', None)
-        current_page = request.args.get('page', 1)
+        current_page = request.args.get('page', 1, type=int)
         print('category', current_category)
-        # print('page', current_page)
+        print('page', current_page)
+
+        if current_category is not None and current_category != 'null':
+            # get questions by category
+            questions_query = Question.query.\
+                filter(Question.category==current_category).\
+                order_by(Question.id).all()
+        else:
+            # get all questions
+            print('getting all questions')
+            questions_query = Question.query.order_by(Question.id).all()
+        
+        question_num = len(questions_query)
+        print('num of total questions:', question_num)
+        
+        # return not found if no questions on the requested page
+        if questions_query:
+            current_questions = paginate_questions(questions_query, current_page)
+            if not current_questions:
+                abort(404)
+        else:
+            abort(404)
+        
         try:
-            if current_category is not None and current_category != 'null':
-                # get questions by category
-                questions_query = Question.query.filter(Question.category==current_category).order_by(Question.id).all()
-                current_questions = paginate_questions(questions_query, 1)
-            else:
-                # get all questions
-                print('get all questions')
-                questions_query = Question.query.order_by(Question.id).all()
-                current_questions = paginate_questions(questions_query, current_page)
-            
-            question_num = len(questions_query)
-            
             categories_query = Category.query.order_by(Category.id).all()
             categories = {}
             for category in categories_query:
@@ -102,7 +116,7 @@ def create_app(test_config=None):
             })
         except:
             abort(422)
-
+        
     """
     @TODO:
     Create an endpoint to DELETE question using a question ID.
@@ -278,7 +292,7 @@ def create_app(test_config=None):
             'success': False,
             'error': 400,
             'message': 'bad request'
-        })
+        }), 400
     
     @app.errorhandler(422)
     def unprocessable(error):
@@ -286,7 +300,7 @@ def create_app(test_config=None):
             'success': False,
             'error': 422,
             'message': 'unprocessable'
-        })
+        }), 422
         
     @app.errorhandler(500)
     def server_error(error):
@@ -294,7 +308,15 @@ def create_app(test_config=None):
             'success': False,
             'error': 500,
             'message': 'internal server error'
-        })
-
+        }), 500
+        
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        return jsonify({
+            'success': False,
+            'message': 'method not allowed',
+            'error': 405
+        }), 405
+        
     return app
 
