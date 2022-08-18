@@ -87,9 +87,6 @@ def create_app(test_config=None):
                 current_questions = paginate_questions(questions_query, current_page)
             
             question_num = len(questions_query)
-
-            if question_num == 0:
-                abort(404)
             
             categories_query = Category.query.order_by(Category.id).all()
             categories = {}
@@ -104,7 +101,7 @@ def create_app(test_config=None):
                 'current_category': current_category,
             })
         except:
-            abort(400)
+            abort(422)
 
     """
     @TODO:
@@ -115,8 +112,10 @@ def create_app(test_config=None):
     """
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
+        question = Question.query.filter(Question.id==question_id).one_or_none()
+        if question is None:
+            abort(404)
         try:
-            question = Question.query.filter(Question.id==question_id).one_or_none()
             print('deleting this:', question)
             question.delete()
             return jsonify({
@@ -124,7 +123,7 @@ def create_app(test_config=None):
                 'deleted': question_id
                 })
         except:
-            abort(400)
+            abort(422)
         
     """
     @TODO:
@@ -190,7 +189,7 @@ def create_app(test_config=None):
                 'currentCategory': None
             })
         except:
-            abort(400)
+            abort(422)
 
     """
     @TODO:
@@ -214,7 +213,7 @@ def create_app(test_config=None):
     #             'current_category': category.type
     #         })
     #     except:
-    #         abort(404)
+    #         abort(422)
 
     """
     @TODO:
@@ -258,13 +257,44 @@ def create_app(test_config=None):
                     'question': None
                 })
         except:
-            abort(422)
+            abort(500)
 
     """
     @TODO:
     Create error handlers for all expected errors
     including 404 and 422.
     """
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            'success': False,
+            'error': 404,
+            'message': 'not found'
+        }), 404
+    
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            'success': False,
+            'error': 400,
+            'message': 'bad request'
+        })
+    
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            'success': False,
+            'error': 422,
+            'message': 'unprocessable'
+        })
+        
+    @app.errorhandler(500)
+    def server_error(error):
+        return jsonify({
+            'success': False,
+            'error': 500,
+            'message': 'internal server error'
+        })
 
     return app
 
