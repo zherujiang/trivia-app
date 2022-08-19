@@ -12,12 +12,8 @@ def paginate_questions(selection, page):
     questions = [question.format() for question in selection]
     start = (page - 1) * QUESTIONS_PER_PAGE
     end = start + QUESTIONS_PER_PAGE
-    if start <= len(selection):
-        current_questions = questions[start:end]
-        return current_questions
-    else:
-        print('page length exceeds maximum')
-        return []
+    current_questions = questions[start:end]
+    return current_questions
     
     
 def create_app(test_config=None):
@@ -49,6 +45,8 @@ def create_app(test_config=None):
     for all available categories.
     this would respond to the GET request from QuizView.js, expecting a dictionary object
     """
+    # get all categories
+    
     @app.route('/categories')
     def get_categories():
         categories_query = Category.query.order_by(Category.id).all()
@@ -73,6 +71,8 @@ def create_app(test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
+    # get all questions or get questions by category
+    
     @app.route('/questions')
     def get_questions():
         current_category = request.args.get('category', None)
@@ -94,12 +94,12 @@ def create_app(test_config=None):
         print('num of total questions:', question_num)
         
         # return not found if no questions on the requested page
-        if questions_query:
+        if not questions_query:
+            abort(404)
+        else:
             current_questions = paginate_questions(questions_query, current_page)
             if not current_questions:
                 abort(404)
-        else:
-            abort(404)
         
         try:
             categories_query = Category.query.order_by(Category.id).all()
@@ -124,6 +124,8 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     """
+    # delete question by id
+    
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
         question = Question.query.filter(Question.id==question_id).one_or_none()
@@ -149,6 +151,8 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
+    # create new questions using a form POST request
+    
     @app.route('/questions', methods=['POST'])
     def add_question():
         body = request.get_json()
@@ -167,7 +171,6 @@ def create_app(test_config=None):
                     difficulty = difficulty,
                     category = category
                 )
-                # print(new_question.question)
                 new_question.insert()
                 
                 return jsonify({
@@ -187,6 +190,8 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     """
+    # search questions by the question texts 
+    
     # @app.route('/questions', methods=['POST'])
     def search_question():
         body = request.get_json()
@@ -213,7 +218,7 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     """
-    # combined get_question_by_category with get_questions
+    ## combined get_question_by_category with get_questions
     # @app.route('/categories/<int:category_id>/questions')
     # def get_questions_by_category(category_id):
     #     try:
@@ -240,6 +245,8 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     """
+    # get (next) question to play the quiz
+    
     @app.route('/quizzes', methods=['POST'])
     def get_quiz_question():
         body = request.get_json()
