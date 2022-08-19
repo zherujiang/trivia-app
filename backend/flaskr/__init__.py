@@ -156,7 +156,9 @@ def create_app(test_config=None):
     @app.route('/questions', methods=['POST'])
     def add_question():
         body = request.get_json()
-        if 'searchTerm' in body.keys():
+        if body is None:
+            abort(400)
+        elif 'searchTerm' in body.keys():
             return search_question()
         else:
             # process this request as a create question
@@ -195,8 +197,7 @@ def create_app(test_config=None):
     # @app.route('/questions', methods=['POST'])
     def search_question():
         body = request.get_json()
-        print(body)
-        search_term = body.get('searchTerm')      
+        search_term = body.get('searchTerm')
         try:
             questions_query = Question.query.filter(Question.question.ilike('%'+search_term+'%')).all()
             questions = paginate_questions(questions_query, 1)
