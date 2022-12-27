@@ -32,14 +32,21 @@ By default, the frontend will run on localhost:3000.
 
 ### Tests
 
-If you want to run tests, there is a test file already wrriten for the backend. Navigate to the backend folder and run the following commands:
+If you want to run tests, there is a test file already wrriten for the backend. First, run the following command to create a test database. You can omit the dropdb command when running the tests for the first time.
+
 ```
 dropdb trivia_test
 createdb trivia_test
+```
+
+Navigate to the backend folder and run the following commands:
+
+```
 psql -f trivia.psql -d trivia_test
 python test_flaskr.py
 ```
-You can omit the dropdb command when running the tests for the first time.
+
+This creates test data tables from the trivia.psql file located in the `./backend` directory. Then it executes tests written in the test_flaskr.py.
 
 ## API Reference
 

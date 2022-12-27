@@ -3,10 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 from settings import DB_NAME, DB_USER, DB_PASSWORD
 
-# database_name = DB_NAME
 user_spec = DB_USER + ':' + DB_PASSWORD
 if len(user_spec) > 1:
-    database_path = 'postgresql://' + user_spec + '@{}/{}'.format('localhost:5432', DB_NAME)
+    database_path = 'postgresql://{}@{}/{}'.format(
+        user_spec, 'localhost:5432', DB_NAME)
 else:
     database_path = 'postgresql://{}/{}'.format('localhost:5432', DB_NAME)
 
@@ -16,6 +16,8 @@ db = SQLAlchemy()
 setup_db(app)
     binds a flask application and a SQLAlchemy service
 """
+
+
 def setup_db(app, database_path=database_path):
     app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -23,10 +25,13 @@ def setup_db(app, database_path=database_path):
     db.init_app(app)
     db.create_all()
 
+
 """
 Question
 
 """
+
+
 class Question(db.Model):
     __tablename__ = 'questions'
 
@@ -60,12 +65,15 @@ class Question(db.Model):
             'answer': self.answer,
             'category': self.category,
             'difficulty': self.difficulty
-            }
+        }
+
 
 """
 Category
 
 """
+
+
 class Category(db.Model):
     __tablename__ = 'categories'
 
@@ -79,4 +87,4 @@ class Category(db.Model):
         return {
             'id': self.id,
             'type': self.type
-            }
+        }
